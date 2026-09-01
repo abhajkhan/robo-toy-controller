@@ -28,6 +28,9 @@ type BleContextValue = {
   deviceInfo: RobotDeviceInfo | null;
   telemetry: RobotTelemetry | null;
   lastMessage: BleMessage | null;
+  isModalOpen: boolean;
+  openModal: () => void;
+  closeModal: () => void;
   connect: () => Promise<void>;
   send: (message: RobotCommand) => Promise<void>;
   move: (direction: MovementDirection) => Promise<void>;
@@ -47,6 +50,15 @@ export function BleProvider({ children }: { children: ReactNode }) {
   const [deviceInfo, setDeviceInfo] = useState<RobotDeviceInfo | null>(null);
   const [telemetry, setTelemetry] = useState<RobotTelemetry | null>(null);
   const [lastMessage, setLastMessage] = useState<BleMessage | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(true);
+
+  const openModal = useCallback(() => {
+    setIsModalOpen(true);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setIsModalOpen(false);
+  }, []);
 
   const setConnectionStatus = useCallback((nextStatus: BleStatus) => {
     statusRef.current = nextStatus;
@@ -104,6 +116,7 @@ export function BleProvider({ children }: { children: ReactNode }) {
         bluetoothDevice.name ?? bluetoothDevice.id ?? "Unknown device",
       );
       setConnectionStatus("connected");
+      setIsModalOpen(false);
     } catch (error) {
       console.error("[BLE CONNECT ERROR]", error);
 
@@ -159,6 +172,9 @@ export function BleProvider({ children }: { children: ReactNode }) {
         deviceInfo,
         telemetry,
         lastMessage,
+        isModalOpen,
+        openModal,
+        closeModal,
         connect,
         send,
         move,

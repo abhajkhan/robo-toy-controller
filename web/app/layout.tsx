@@ -4,6 +4,7 @@ import "./globals.css";
 import { BleProvider } from "@/context/BleContext";
 import AppHeader from "@/components/AppHeader";
 import BluetoothConnectionGate from "@/components/BluetoothConnectionGate";
+import BluetoothNotificationBanner from "@/components/BluetoothNotificationBanner";
 import BottomNav from "@/components/BottomNav";
 
 const geistSans = Geist({
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <BleProvider>
           <AppHeader />
+          <BluetoothNotificationBanner />
           <BluetoothConnectionGate />
           <div className="pb-20">{children}</div>
           <BottomNav />
