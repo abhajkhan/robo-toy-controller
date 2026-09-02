@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { UserButton } from "@clerk/nextjs";
 import { Battery, Bluetooth, Cpu } from "lucide-react";
 
 import { useBleContext } from "@/context/BleContext";
@@ -41,7 +42,7 @@ export default function AppHeader() {
           </div>
         </Link>
 
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2.5">
           {robot.info && (
             <div className="flex items-center gap-1.5 text-xs text-white/60">
               <Battery size={15} />
@@ -67,6 +68,10 @@ export default function AppHeader() {
 
             <span>{isConnected ? "Connected" : status === "connecting" ? "Connecting" : "Offline"}</span>
           </button>
+
+          <div className="ml-1 flex items-center shrink-0">
+            <UserButton />
+          </div>
         </div>
       </div>
     </header>

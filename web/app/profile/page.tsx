@@ -1,11 +1,15 @@
 "use client";
 
-import { Bluetooth, LoaderCircle, Unplug } from "lucide-react";
+import { useClerk, useUser } from "@clerk/nextjs";
+import { Bluetooth, LoaderCircle, LogOut, Unplug, User as UserIcon } from "lucide-react";
+import Image from "next/image";
 
 import { useBleContext } from "@/context/BleContext";
 import type { RobotState } from "@/types/robot";
 
 export default function Profile() {
+  const { user } = useUser();
+  const { signOut } = useClerk();
   const { status, deviceInfo, connect, disconnect } = useBleContext();
 
   const robot: RobotState = {
@@ -22,9 +26,55 @@ export default function Profile() {
   const isConnecting = status === "connecting";
   const isConnected = status === "connected";
 
+  const primaryEmail =
+    user?.emailAddresses.find((email) => email.id === user.primaryEmailAddressId)
+      ?.emailAddress ??
+    user?.emailAddresses[0]?.emailAddress ??
+    "No email address";
+
   return (
     <div className="mx-auto min-h-screen max-w-md px-4 pb-10 pt-24">
-      <section className="mt-8 space-y-6">
+      <section className="mt-4 space-y-6">
+        {/* User Account Card */}
+        <div className="rounded-3xl border border-border bg-surface p-5 shadow-lg">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+            User Account
+          </p>
+
+          <div className="mt-4 flex items-center gap-4">
+            {user?.imageUrl ? (
+              <Image
+                src={user.imageUrl}
+                alt={user.fullName ?? "User Avatar"}
+                width={52}
+                height={52}
+                className="h-13 w-13 rounded-2xl border border-primary/30 object-cover shadow-md"
+              />
+            ) : (
+              <div className="flex h-13 w-13 items-center justify-center rounded-2xl bg-primary/15 text-primary border border-primary/30">
+                <UserIcon size={26} />
+              </div>
+            )}
+
+            <div className="min-w-0 flex-1">
+              <h2 className="truncate text-lg font-black tracking-tight">
+                {user?.fullName ?? user?.username ?? "Authenticated User"}
+              </h2>
+              <p className="truncate text-xs text-white/50">{primaryEmail}</p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => void signOut()}
+            className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-2.5 text-xs font-bold text-white/80 transition hover:bg-white/10 hover:text-white"
+          >
+            <LogOut size={16} />
+            Sign Out
+          </button>
+        </div>
+
+        {/* Robot Status Card */}
         <div className="rounded-2xl border border-border bg-surface p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/35">
             Robot status
@@ -48,6 +98,7 @@ export default function Profile() {
           </div>
         </div>
 
+        {/* Bluetooth Connection Card */}
         <div className="rounded-2xl border border-border bg-surface p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/35">
             Bluetooth
