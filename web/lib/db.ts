@@ -13,7 +13,7 @@ const pool = mysql.createPool({
 
 export async function query<T = unknown>(sql: string, params?: unknown[]): Promise<T> {
   try {
-    const [results] = await pool.execute(sql, params);
+    const [results] = await pool.execute(sql, params as any);
     return results as T;
   } catch (error) {
     console.error("[MYSQL DB QUERY ERROR]", error);
