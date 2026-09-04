@@ -1,7 +1,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-import { query } from "@/lib/db";
+import { getDatabase } from "@/lib/mongodb";
 
 export async function POST() {
   try {
@@ -14,35 +14,39 @@ export async function POST() {
       );
     }
 
-    const primaryEmail = user.emailAddresses.find(
-      (email) => email.id === user.primaryEmailAddressId
-    )?.emailAddress ?? user.emailAddresses[0]?.emailAddress ?? "";
-
-    const sql = `
-      INSERT INTO users (id, clerk_id, email, first_name, last_name, image_url)
-      VALUES (?, ?, ?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE
-        email = VALUES(email),
-        first_name = VALUES(first_name),
-        last_name = VALUES(last_name),
-        image_url = VALUES(image_url)
-    `;
+    const primaryEmail =
+      user.emailAddresses.find((email) => email.id === user.primaryEmailAddressId)
+        ?.emailAddress ??
+      user.emailAddresses[0]?.emailAddress ??
+      "";
 
     try {
-      await query(sql, [
-        user.id,
-        user.id,
-        primaryEmail,
-        user.firstName ?? "",
-        user.lastName ?? "",
-        user.imageUrl ?? "",
-      ]);
+      const db = await getDatabase();
+      const usersCollection = db.collection("users");
+
+      await usersCollection.updateOne(
+        { clerkId: user.id },
+        {
+          $set: {
+            clerkId: user.id,
+            email: primaryEmail,
+            firstName: user.firstName ?? "",
+            lastName: user.lastName ?? "",
+            imageUrl: user.imageUrl ?? "",
+            updatedAt: new Date(),
+          },
+          $setOnInsert: {
+            createdAt: new Date(),
+          },
+        },
+        { upsert: true }
+      );
     } catch (dbErr) {
-      console.warn("[USER SYNC] MySQL database write skipped or failed:", dbErr);
+      console.warn("[USER SYNC] MongoDB Atlas database write skipped or failed:", dbErr);
       return NextResponse.json({
         success: true,
         syncedToDb: false,
-        warning: "MySQL server unreachable or error",
+        warning: "MongoDB Atlas unreachable or invalid placeholder URI",
         user: {
           id: user.id,
           email: primaryEmail,
