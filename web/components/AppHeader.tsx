@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { UserButton } from "@clerk/nextjs";
 import { Battery, Bluetooth, Cpu } from "lucide-react";
 
 import { useBleContext } from "@/context/BleContext";
 import type { RobotState } from "@/types/robot";
 
 export default function AppHeader() {
-  const { status, deviceInfo } = useBleContext();
+  const { status, deviceInfo, openModal } = useBleContext();
 
   const robot: RobotState = {
     connectionStatus: status,
@@ -41,7 +42,7 @@ export default function AppHeader() {
           </div>
         </Link>
 
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2.5">
           {robot.info && (
             <div className="flex items-center gap-1.5 text-xs text-white/60">
               <Battery size={15} />
@@ -50,16 +51,26 @@ export default function AppHeader() {
             </div>
           )}
 
-          <div
-            className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
+          <button
+            type="button"
+            onClick={() => {
+              if (!isConnected) {
+                openModal();
+              }
+            }}
+            className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition ${
               isConnected
-                ? "border-success/30 bg-success/10 text-success"
-                : "border-white/10 bg-white/5 text-white/40"
+                ? "border-success/30 bg-success/10 text-success cursor-default"
+                : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 cursor-pointer"
             }`}
           >
             <Bluetooth size={13} />
 
-            <span>{isConnected ? "Connected" : "Offline"}</span>
+            <span>{isConnected ? "Connected" : status === "connecting" ? "Connecting" : "Offline"}</span>
+          </button>
+
+          <div className="ml-1 flex items-center shrink-0">
+            <UserButton />
           </div>
         </div>
       </div>
