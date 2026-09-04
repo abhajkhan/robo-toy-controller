@@ -5,7 +5,16 @@
 declare global {
   interface Navigator {
     bluetooth?: {
-      requestDevice(options: { filters: Array<{ services: string[] }> }): Promise<BluetoothDevice>;
+      requestDevice(
+        options:
+          | {
+              filters: Array<{ services: string[] }>;
+            }
+          | {
+              acceptAllDevices: boolean;
+              optionalServices?: string[];
+            }
+      ): Promise<BluetoothDevice>;
     };
   }
 
@@ -13,21 +22,37 @@ declare global {
     value: DataView | null;
     startNotifications(): Promise<void>;
     writeValue(data: BufferSource): Promise<void>;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject): void;
-    removeEventListener(type: string, listener: EventListenerOrEventListenerObject): void;
+    addEventListener(
+      type: string,
+      listener: EventListenerOrEventListenerObject
+    ): void;
+    removeEventListener(
+      type: string,
+      listener: EventListenerOrEventListenerObject
+    ): void;
   }
 
   interface BluetoothRemoteGATTServer {
     connect(): Promise<BluetoothRemoteGATTServer>;
-    getPrimaryService(uuid: string): Promise<{ getCharacteristic(uuid: string): Promise<BluetoothRemoteGATTCharacteristic> }>;
+    getPrimaryService(uuid: string): Promise<{
+      getCharacteristic(
+        uuid: string
+      ): Promise<BluetoothRemoteGATTCharacteristic>;
+    }>;
     connected?: boolean;
     disconnect(): void;
   }
 
   interface BluetoothDevice {
     gatt?: BluetoothRemoteGATTServer | null;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject): void;
-    removeEventListener(type: string, listener: EventListenerOrEventListenerObject): void;
+    addEventListener(
+      type: string,
+      listener: EventListenerOrEventListenerObject
+    ): void;
+    removeEventListener(
+      type: string,
+      listener: EventListenerOrEventListenerObject
+    ): void;
   }
 }
 
@@ -66,11 +91,8 @@ export class BleClient {
     this.disconnectHandler = onDisconnect;
 
     this.device = await navigator.bluetooth.requestDevice({
-      filters: [
-        {
-          services: [BLE_SERVICE_UUID],
-        },
-      ],
+      acceptAllDevices: true,
+      optionalServices: [BLE_SERVICE_UUID],
     });
 
     if (!this.device.gatt) {
