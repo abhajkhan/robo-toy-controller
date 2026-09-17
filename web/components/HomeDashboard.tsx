@@ -112,17 +112,17 @@ function TrustModal({
 
 /* ─── Expression table ────────────────────────────── */
 const EXPRESSIONS = [
-  { id: 0,  label: "Happy",   image: "/happy.png" },
-  { id: 1,  label: "Sad",     image: "/sad.png" },
-  { id: 2,  label: "Heart",   image: "/heart.png" },
-  { id: 3,  label: "Star",    image: "/star.png" },
-  { id: 4,  label: "Check",   image: "/check.png" },
-  { id: 5,  label: "Cross",   image: "/cross.png" },
-  { id: 6,  label: "Warning", image: "/warning.png" },
-  { id: 7,  label: "Robot",   image: "/happy.png" },
-  { id: 8,  label: "Battery", image: "/battery.png" },
-  { id: 9,  label: "Sleep",   image: "/sleep.png" },
-  { id: 10, label: "WiFi",    image: "/wifi.png" },
+  { id: 0, label: "Happy", image: "/happy.png" },
+  { id: 1, label: "Sad", image: "/sad.png" },
+  { id: 2, label: "Heart", image: "/heart.png" },
+  { id: 3, label: "Star", image: "/star.png" },
+  { id: 4, label: "Check", image: "/check.png" },
+  { id: 5, label: "Cross", image: "/cross.png" },
+  { id: 6, label: "Warning", image: "/warning.png" },
+  { id: 7, label: "Robot", image: "/happy.png" },
+  { id: 8, label: "Battery", image: "/battery.png" },
+  { id: 9, label: "Sleep", image: "/sleep.png" },
+  { id: 10, label: "WiFi", image: "/wifi.png" },
 ] as const;
 
 type ExpressionId = (typeof EXPRESSIONS)[number]["id"];
@@ -185,16 +185,16 @@ const INITIAL_CHALLENGES: ChallengeData[] = [
 
 /* ─── Mood map ────────────────────────────────────── */
 const MOOD_LABELS: Record<ExpressionId, string> = {
-  0:  "Happy",
-  1:  "Sad",
-  2:  "Loving",
-  3:  "Starry",
-  4:  "Accomplished",
-  5:  "Frustrated",
-  6:  "Alert",
-  7:  "Robot Mode",
-  8:  "Low Power",
-  9:  "Sleepy",
+  0: "Happy",
+  1: "Sad",
+  2: "Loving",
+  3: "Starry",
+  4: "Accomplished",
+  5: "Frustrated",
+  6: "Alert",
+  7: "Robot Mode",
+  8: "Low Power",
+  9: "Sleepy",
   10: "Searching…",
 };
 
@@ -216,8 +216,8 @@ function ChallengeCarousel() {
             totalStars += lvl.stars;
           }
         }
-        setChallenges(prev => prev.map(c => 
-          c.id === "colour-quest" 
+        setChallenges(prev => prev.map(c =>
+          c.id === "colour-quest"
             ? { ...c, done: data.completedLevels, total: data.totalLevels, score: totalScore, stars: totalStars }
             : c
         ));
@@ -273,9 +273,9 @@ function ChallengeCarousel() {
 
       {/* Sliding Card */}
       <div className="relative flex items-center justify-between rounded-2xl border border-white/5 bg-white/5 p-3">
-        
+
         {/* Left: Icon + Title */}
-        <div 
+        <div
           className="flex w-[28%] flex-col items-center justify-center gap-1.5 overflow-hidden rounded-xl border border-white/5 py-2 px-1 text-center"
           style={{ background: `linear-gradient(135deg, ${ch.accent}33 0%, rgba(0,0,0,0.4) 100%)` }}
         >
@@ -315,17 +315,6 @@ function ChallengeCarousel() {
           </div>
           <p className="text-[8px] uppercase tracking-[0.05em] text-white/40">best score</p>
         </div>
-
-        {/* Play Time (Only shown if space permits or if data exists) */}
-        {ch.playTime && (
-          <div className="hidden sm:flex flex-col items-center gap-0.5">
-            <div className="flex items-center gap-1">
-              <Clock size={10} className="text-accent" />
-              <span className="text-sm font-bold text-white">{ch.playTime}</span>
-            </div>
-            <p className="text-[8px] uppercase tracking-[0.05em] text-white/40">play time</p>
-          </div>
-        )}
 
         {/* Right Arrow Button */}
         <button
@@ -391,13 +380,13 @@ export default function HomeDashboard() {
   const [colorWheelOpen, setColorWheelOpen] = useState(false);
   const [petFullscreen, setPetFullscreen] = useState(false);
   const [trustOpen, setTrustOpen] = useState(false);
-  
+
   const [trustLevel, setTrustLevel] = useState(50);
 
   // Initialize and listen for trust changes
   useEffect(() => {
     setTrustLevel(getTrustLevel());
-    
+
     const onTrustChange = (e: Event) => {
       const ce = e as CustomEvent<number>;
       setTrustLevel(ce.detail);
@@ -480,11 +469,10 @@ export default function HomeDashboard() {
 
       {/* ── Pet Status ── */}
       <div
-        className={`mt-4 rounded-3xl border border-border bg-black p-5 transition-all duration-300 ${
-          petFullscreen
-            ? "fixed inset-0 z-[200] m-0 rounded-none overflow-y-auto border-0"
-            : ""
-        }`}
+        className={`mt-4 rounded-3xl border border-border bg-black p-5 transition-all duration-300 ${petFullscreen
+          ? "fixed inset-0 z-[200] m-0 rounded-none overflow-y-auto border-0"
+          : ""
+          }`}
       >
 
         {/* Header: label left | fullscreen btn + controller btn right */}
@@ -523,13 +511,12 @@ export default function HomeDashboard() {
               {/* Connection notification dot */}
               <span
                 aria-hidden="true"
-                className={`absolute right-0.5 top-0.5 h-3 w-3 rounded-full border-2 border-black transition-colors ${
-                  isConnected
-                    ? "bg-success shadow-[0_0_6px_rgba(53,229,154,0.9)]"
-                    : status === "connecting"
-                      ? "bg-warning animate-pulse shadow-[0_0_6px_rgba(255,200,87,0.7)]"
-                      : "bg-danger shadow-[0_0_6px_rgba(255,77,103,0.9)]"
-                }`}
+                className={`absolute right-0.5 top-0.5 h-3 w-3 rounded-full border-2 border-black transition-colors ${isConnected
+                  ? "bg-success shadow-[0_0_6px_rgba(53,229,154,0.9)]"
+                  : status === "connecting"
+                    ? "bg-warning animate-pulse shadow-[0_0_6px_rgba(255,200,87,0.7)]"
+                    : "bg-danger shadow-[0_0_6px_rgba(255,77,103,0.9)]"
+                  }`}
               />
             </button>
           </div>
@@ -541,9 +528,8 @@ export default function HomeDashboard() {
 
             {/* Robot face image — centred, borderless */}
             <div
-              className={`relative flex h-44 w-44 shrink-0 items-center justify-center overflow-hidden rounded-[2.75rem] bg-black transition-all duration-300 ${
-                expressionAnimating ? "scale-105" : ""
-              }`}
+              className={`relative flex h-44 w-44 shrink-0 items-center justify-center overflow-hidden rounded-[2.75rem] bg-black transition-all duration-300 ${expressionAnimating ? "scale-105" : ""
+                }`}
             >
               <Image
                 src={EXPRESSIONS.find((e) => e.id === selectedExpression)?.image ?? "/happy.png"}
@@ -563,10 +549,10 @@ export default function HomeDashboard() {
                 const pct = trustLevel;
                 const tier =
                   pct >= 67
-                    ? { label: "High Trust",   color: "#35e59a" }
+                    ? { label: "High Trust", color: "#35e59a" }
                     : pct >= 34
-                    ? { label: "Medium Trust", color: "#ffc857" }
-                    : { label: "Low Trust",    color: "#ff4d67" };
+                      ? { label: "Medium Trust", color: "#ffc857" }
+                      : { label: "Low Trust", color: "#ff4d67" };
                 return (
                   <div className="flex flex-col items-center gap-1">
                     <button
@@ -616,12 +602,12 @@ export default function HomeDashboard() {
                         <stop offset="100%" stopColor="white" stopOpacity="0" />
                       </radialGradient>
                       <linearGradient id="pet-hg" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%"   stopColor="#ff0000" />
-                        <stop offset="16%"  stopColor="#ffff00" />
-                        <stop offset="33%"  stopColor="#00ff00" />
-                        <stop offset="50%"  stopColor="#00ffff" />
-                        <stop offset="66%"  stopColor="#0000ff" />
-                        <stop offset="83%"  stopColor="#ff00ff" />
+                        <stop offset="0%" stopColor="#ff0000" />
+                        <stop offset="16%" stopColor="#ffff00" />
+                        <stop offset="33%" stopColor="#00ff00" />
+                        <stop offset="50%" stopColor="#00ffff" />
+                        <stop offset="66%" stopColor="#0000ff" />
+                        <stop offset="83%" stopColor="#ff00ff" />
                         <stop offset="100%" stopColor="#ff0000" />
                       </linearGradient>
                     </defs>
@@ -655,9 +641,8 @@ export default function HomeDashboard() {
             {/* Centering wrapper for the face */}
             <div className="absolute inset-0 flex items-center justify-center p-8">
               <div
-                className={`relative w-full max-w-sm aspect-square max-h-[70vh] overflow-hidden rounded-[3rem] transition-transform duration-300 ${
-                  expressionAnimating ? "scale-105" : ""
-                }`}
+                className={`relative w-full max-w-sm aspect-square max-h-[70vh] overflow-hidden rounded-[3rem] transition-transform duration-300 ${expressionAnimating ? "scale-105" : ""
+                  }`}
               >
                 <Image
                   src={EXPRESSIONS.find((e) => e.id === selectedExpression)?.image ?? "/happy.png"}
@@ -737,10 +722,10 @@ export default function HomeDashboard() {
         const pct = trustLevel;
         const tier =
           pct >= 67
-            ? { label: "High Trust",   color: "#35e59a" }
+            ? { label: "High Trust", color: "#35e59a" }
             : pct >= 34
-            ? { label: "Medium Trust", color: "#ffc857" }
-            : { label: "Low Trust",    color: "#ff4d67" };
+              ? { label: "Medium Trust", color: "#ffc857" }
+              : { label: "Low Trust", color: "#ff4d67" };
         return (
           <TrustModal
             pct={pct}
