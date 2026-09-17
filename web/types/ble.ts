@@ -1,3 +1,12 @@
+import type {
+  ColorQuestCommand,
+  ColorQuestErrorMessage,
+  ColorQuestReadyMessage,
+  ColorQuestResult,
+  ColorQuestTaskMessage,
+  ColorQuestTaskResultMessage,
+} from "@/types/colourQuest";
+
 export type RobotDeviceInfo = {
   deviceId: string;
   name: string;
@@ -6,6 +15,7 @@ export type RobotDeviceInfo = {
 };
 
 export type RobotTelemetry = {
+  battery_percentage?: number;
   direction: number;
   distance: {
     front: number | null;
@@ -21,6 +31,9 @@ export type RobotTelemetry = {
   };
   pit: {
     detected: boolean;
+  };
+  touch?: {
+    event: "none" | "single_tap" | "double_tap" | "hold";
   };
   timestamp?: number;
 };
@@ -49,7 +62,30 @@ export type ColorCommand = {
   b: number;
 };
 
-export type RobotCommand = MoveCommand | StopCommand | ColorCommand;
+export type BuzzerCommand = {
+  command: "buzzer";
+  freq?: number;
+  duration?: number;
+};
+
+export type OledTextCommand = {
+  command: "oled_text";
+  text: string;
+};
+
+export type OledEmojiCommand = {
+  command: "oled_emoji";
+  emoji_id: number;
+};
+
+export type RobotCommand =
+  | MoveCommand
+  | StopCommand
+  | ColorCommand
+  | BuzzerCommand
+  | OledTextCommand
+  | OledEmojiCommand
+  | ColorQuestCommand;
 
 export type DeviceInfoMessage = {
   type: "device_info";
@@ -74,7 +110,12 @@ export type ResponseMessage = {
 export type BleMessage =
   | DeviceInfoMessage
   | TelemetryMessage
-  | ResponseMessage;
+  | ResponseMessage
+  | ColorQuestResult
+  | ColorQuestTaskMessage
+  | ColorQuestTaskResultMessage
+  | ColorQuestReadyMessage
+  | ColorQuestErrorMessage;
 
 const RGB_VALUES: Record<RgbColor, Pick<ColorCommand, "r" | "g" | "b">> = {
   red: { r: 255, g: 0, b: 0 },
@@ -99,9 +140,21 @@ function isRobotTelemetry(value: unknown): value is RobotTelemetry {
     return false;
   }
 
-  const { direction, distance, obstacle, motion, pit, timestamp } = value;
+  const {
+    battery_percentage,
+    direction,
+    distance,
+    obstacle,
+    motion,
+    pit,
+    touch,
+    timestamp,
+  } = value;
 
   return (
+    (battery_percentage === undefined ||
+      (typeof battery_percentage === "number" &&
+        Number.isFinite(battery_percentage))) &&
     typeof direction === "number" &&
     isRecord(distance) &&
     (typeof distance.front === "number" || distance.front === null) &&
@@ -114,6 +167,7 @@ function isRobotTelemetry(value: unknown): value is RobotTelemetry {
     typeof motion.sudden === "boolean" &&
     isRecord(pit) &&
     typeof pit.detected === "boolean" &&
+    (touch === undefined || (isRecord(touch) && typeof touch.event === "string")) &&
     (timestamp === undefined || typeof timestamp === "number")
   );
 }
@@ -123,8 +177,7 @@ export function parseBleMessage(value: unknown): BleMessage | null {
     return null;
   }
 
-  // The existing RGB proof-of-concept responds with status and command,
-  // but no message type. Normalize that established response for the context.
+  // Legacy response format
   if (typeof value.type !== "string") {
     if (typeof value.status !== "string" || typeof value.command !== "string") {
       return null;
@@ -154,22 +207,60 @@ export function parseBleMessage(value: unknown): BleMessage | null {
     return {
       type: "telemetry",
       telemetry: {
+        ...(value.battery_percentage === undefined
+          ? {}
+          : { battery_percentage: value.battery_percentage }),
         direction: value.direction,
         distance: value.distance,
         obstacle: value.obstacle,
         motion: value.motion,
         pit: value.pit,
+        ...(value.touch === undefined ? {} : { touch: value.touch }),
         ...(value.timestamp === undefined ? {} : { timestamp: value.timestamp }),
       } as RobotTelemetry,
     };
   }
 
-  if (
-    value.type === "response" &&
-    (typeof value.status !== "string" || typeof value.command !== "string")
-  ) {
+  if (value.type === "response") {
+    if (
+      (value.game === "color-quest" || value.game === "colour-quest") &&
+      typeof value.score === "number" &&
+      Number.isFinite(value.score) &&
+      value.score >= 0 &&
+      value.score <= 1
+    ) {
+      return { ...value, game: "color-quest" } as ColorQuestResult;
+    }
+
+    if (
+      typeof value.status === "string" &&
+      typeof value.command === "string"
+    ) {
+      return value as ResponseMessage;
+    }
+
     return null;
   }
 
-  return value.type === "response" ? (value as ResponseMessage) : null;
+  if (value.type === "task" && (value.game === "color-quest" || value.game === "colour-quest")) {
+    if (typeof value.index === "number") {
+      return { ...value, game: "color-quest" } as ColorQuestTaskMessage;
+    }
+  }
+
+  if (value.type === "task_result" && (value.game === "color-quest" || value.game === "colour-quest")) {
+    if (typeof value.index === "number" && typeof value.correct === "boolean") {
+      return { ...value, game: "color-quest" } as ColorQuestTaskResultMessage;
+    }
+  }
+
+  if (value.type === "ready" && (value.game === "color-quest" || value.game === "colour-quest")) {
+    return { ...value, game: "color-quest" } as ColorQuestReadyMessage;
+  }
+
+  if (value.type === "error" && typeof value.message === "string") {
+    return value as ColorQuestErrorMessage;
+  }
+
+  return null;
 }
